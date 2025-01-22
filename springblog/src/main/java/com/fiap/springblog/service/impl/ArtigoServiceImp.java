@@ -102,4 +102,11 @@ public class ArtigoServiceImp implements ArtigoService {
 
 
     }
+    //Query methods - example
+    @Override
+    public List<Artigo> findByStatusAndDataGreaterThan(Integer status, LocalDateTime data) {
+        return this.artigoRepository.findByStatusAndDataGreaterThan(status, data);
+    }
+
+
 }

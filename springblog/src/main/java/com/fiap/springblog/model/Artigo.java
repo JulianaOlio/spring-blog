@@ -9,10 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Data
 @Document
-@AllArgsConstructor
-@NoArgsConstructor
 public class Artigo {
 
     @Id
@@ -25,6 +22,18 @@ public class Artigo {
 
     @DBRef
     private Autor autor;
+
+    public Artigo() {};
+
+    public Artigo(String codigo, String titulo, LocalDateTime data, String texto, String url, Integer status, Autor autor) {
+        this.codigo = codigo;
+        this.titulo = titulo;
+        this.data = data;
+        this.texto = texto;
+        this.url = url;
+        this.status = status;
+        this.autor = autor;
+    }
 
     public String getCodigo() {
         return codigo;
