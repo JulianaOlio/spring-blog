@@ -2,6 +2,7 @@ package com.fiap.springblog.service;
 
 import com.fiap.springblog.model.Artigo;
 import com.fiap.springblog.model.Autor;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,5 +29,6 @@ public interface ArtigoService {
 
     public List<Artigo> findByStatusAndDataGreaterThan(Integer status, LocalDateTime data);
 
+    public List<Artigo> obterArtigoPorDataHora(LocalDateTime de, LocalDateTime ate);
 
 }

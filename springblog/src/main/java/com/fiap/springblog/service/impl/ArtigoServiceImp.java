@@ -108,5 +108,10 @@ public class ArtigoServiceImp implements ArtigoService {
         return this.artigoRepository.findByStatusAndDataGreaterThan(status, data);
     }
 
+    @Override
+    public List<Artigo> obterArtigoPorDataHora(LocalDateTime de, LocalDateTime ate) {
+        return this.artigoRepository.obterArtigoPorDataHora(de,ate);
+    }
+
 
 }

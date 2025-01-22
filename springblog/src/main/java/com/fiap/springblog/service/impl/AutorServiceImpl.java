@@ -1,6 +1,5 @@
 package com.fiap.springblog.service.impl;
 
-import com.fiap.springblog.model.Artigo;
 import com.fiap.springblog.model.Autor;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.AutorService;

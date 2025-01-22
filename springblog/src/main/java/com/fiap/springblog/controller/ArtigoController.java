@@ -71,6 +71,11 @@ public class ArtigoController {
             @RequestParam("data") LocalDateTime data){
 
         return this.artigoService.findByStatusAndDataGreaterThan(status, data);
+    }
 
+    public List<Artigo> obterArtigoPorDataHora(
+            @RequestParam("de") LocalDateTime de,
+            @RequestParam("ate") LocalDateTime ate){
+        return this.artigoService.obterArtigoPorDataHora(de,ate);
     }
 }
