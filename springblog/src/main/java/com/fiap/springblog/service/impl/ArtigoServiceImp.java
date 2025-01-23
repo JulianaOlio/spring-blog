@@ -1,18 +1,26 @@
 package com.fiap.springblog.service.impl;
 
 import com.fiap.springblog.model.Artigo;
+import com.fiap.springblog.model.ArtigoStatusCount;
 import com.fiap.springblog.model.Autor;
+import com.fiap.springblog.model.AutorTotalArtigo;
 import com.fiap.springblog.repository.ArtigoRepository;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.ArtigoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
+import org.springframework.data.mongodb.core.query.*;
 import org.springframework.data.mongodb.repository.DeleteQuery;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -113,5 +121,91 @@ public class ArtigoServiceImp implements ArtigoService {
         return this.artigoRepository.obterArtigoPorDataHora(de,ate);
     }
 
+    @Override
+    public List<Artigo> encontrarArtigosComplexos(Integer status, LocalDateTime data, String titulo) {
 
+        //crio um criterio
+        Criteria criteria = new Criteria();
+
+        //filtro artigos com data menor ou igual ao valor fornecido
+        criteria.and("data").lte(data);
+
+        // filtro somente artigos com status identificado no banco
+        if(status != null){
+            criteria.and("status").is(status);
+        }
+        // filtro os artigos cujo titulo exista no banco
+        if(titulo != null && !titulo.isEmpty()){
+            criteria.and("titulo").regex(titulo, "i");
+        }
+        Query query = new Query(criteria);
+        return mongoTemplate.find(query, Artigo.class);
+    }
+
+    @Override
+    public Page<Artigo> findAll(Pageable pageable) {
+        Sort sort = Sort.by("titulo").ascending();
+        Pageable paginacao =
+                PageRequest.of(pageable.getPageNumber(),
+                        pageable.getPageSize(),sort);
+        return this.artigoRepository.findAll(paginacao);
+    }
+
+    //Query methods
+    @Override
+    public List<Artigo> findByStatusOrderByTituloAsc(Integer status) {
+        return this.artigoRepository.findByStatusOrderByTituloAsc(status);
+    }
+
+    @Override
+    public List<Artigo> obterArtigosPorStatusComOrdenacao(Integer status) {
+        return this.artigoRepository.obterArtigosPorStatusComOrdenacao(status);
+    }
+
+    @Override
+    public List<Artigo> findByTexto(String searchTerm) {
+
+        TextCriteria criteria =
+                TextCriteria.forDefaultLanguage().matchingPhrase(searchTerm);
+
+        Query query = TextQuery.queryText(criteria).sortByScore();
+        return mongoTemplate.find(query, Artigo.class);
+    }
+
+    @Override
+    public List<ArtigoStatusCount> contarArtigosPorStatus() {
+        TypedAggregation<Artigo> aggregation =
+                Aggregation.newAggregation(
+                        Artigo.class,
+                        Aggregation.group("status").count().as("quantidade"),
+                        Aggregation.project("quantidade").and("status")
+                                .previousOperation()
+                );
+        AggregationResults<ArtigoStatusCount> result =
+                mongoTemplate.aggregate(aggregation, ArtigoStatusCount.class);
+
+        return result.getMappedResults();
+    }
+
+    @Override
+    public List<AutorTotalArtigo> calcularTotalArtigosAutorPeriodo(LocalDate dataInicio,
+                                                                   LocalDate dataFim) {
+       TypedAggregation<Artigo> aggregation =
+               Aggregation.newAggregation(
+                       Artigo.class,
+                       Aggregation.match(
+                               Criteria.where("data")
+                                       .gte(dataInicio.atStartOfDay())
+                                       .lt(dataFim.plusDays(1).atStartOfDay())
+                       ),
+                       Aggregation.group("autor").count().as("totalArtigos"),
+                       Aggregation.project("totalArtigos").and("autor")
+                                .previousOperation()
+               );
+
+       AggregationResults<AutorTotalArtigo> results =
+               mongoTemplate.aggregate(aggregation, AutorTotalArtigo.class);
+
+       return results.getMappedResults();
+    }
 }

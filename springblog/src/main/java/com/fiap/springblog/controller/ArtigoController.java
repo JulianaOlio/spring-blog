@@ -1,10 +1,14 @@
 package com.fiap.springblog.controller;
 
 import com.fiap.springblog.model.Artigo;
+import com.fiap.springblog.model.ArtigoStatusCount;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.ArtigoService;
 import com.fiap.springblog.model.Autor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.service.annotation.PutExchange;
 
@@ -52,30 +56,72 @@ public class ArtigoController {
 
     @PutMapping("/{codigo}")
     public void atualizarArtigo(@PathVariable String codigo,
-                                @RequestBody String novaURL){
-        this.artigoService.atualizarArtigo(codigo,novaURL);
+                                @RequestBody String novaURL) {
+        this.artigoService.atualizarArtigo(codigo, novaURL);
     }
 
     @DeleteMapping("/{codigo}")
-    public void deletarArtigo(@PathVariable String codigo){
+    public void deletarArtigo(@PathVariable String codigo) {
         this.artigoService.deleteById(codigo);
     }
 
     @DeleteMapping("/delete")
-    public void deletarArtigoById(@RequestParam("codigo") String codigo){
+    public void deletarArtigoById(@RequestParam("codigo") String codigo) {
         this.artigoService.deleteArtigoById(codigo);
     }
+
     @GetMapping("/status-maiordata")
     public List<Artigo> findByStatusAndDataGreaterThan(
             @RequestParam("status") Integer status,
-            @RequestParam("data") LocalDateTime data){
+            @RequestParam("data") LocalDateTime data) {
 
         return this.artigoService.findByStatusAndDataGreaterThan(status, data);
     }
 
+    @GetMapping("/periodo")
     public List<Artigo> obterArtigoPorDataHora(
             @RequestParam("de") LocalDateTime de,
-            @RequestParam("ate") LocalDateTime ate){
-        return this.artigoService.obterArtigoPorDataHora(de,ate);
+            @RequestParam("ate") LocalDateTime ate) {
+        return this.artigoService.obterArtigoPorDataHora(de, ate);
+    }
+
+    @GetMapping("/artigo-complexo")
+    public List<Artigo> encontrarArtigosComplexos(
+            @RequestParam("status") Integer status,
+            @RequestParam("data") LocalDateTime data,
+            @RequestParam("titulo") String titulo
+    ){
+        return this.artigoService.encontrarArtigosComplexos(status, data, titulo);
+    }
+    @GetMapping("/pagina-artigo")
+    public ResponseEntity<Page<Artigo>> obterArtigosPaginad(Pageable pageable){
+        Page<Artigo> artigos = this.artigoService.findAll(pageable);
+
+        return ResponseEntity.ok(artigos);
+    }
+
+    @GetMapping("/status-ordenado")
+    public List<Artigo> findByStatusOrderByTituloAsc(
+            @RequestParam("status")Integer status
+    ){
+           return this.artigoService.findByStatusOrderByTituloAsc(status);
+    }
+
+    @GetMapping("/status-query-ordenacao")
+    public List<Artigo> obterArtigosPorStatusComOrdenacao(
+            @RequestParam("status") Integer status
+    ){
+        return this.artigoService.obterArtigosPorStatusComOrdenacao(status);
+    }
+
+    @GetMapping("/buscatexto")
+    public List<Artigo> findByTexto(
+            @RequestParam("searchText") String searchText
+    ){
+        return this.artigoService.findByTexto(searchText);
+    }
+    @GetMapping("/contar-artigo")
+    public List<ArtigoStatusCount> contarArtigosPorStatus(){
+        return this.artigoService.contarArtigosPorStatus();
     }
 }

@@ -1,9 +1,12 @@
 package com.fiap.springblog.service;
 
 import com.fiap.springblog.model.Artigo;
-import com.fiap.springblog.model.Autor;
-import org.springframework.data.mongodb.repository.Query;
+import com.fiap.springblog.model.ArtigoStatusCount;
+import com.fiap.springblog.model.AutorTotalArtigo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,5 +33,19 @@ public interface ArtigoService {
     public List<Artigo> findByStatusAndDataGreaterThan(Integer status, LocalDateTime data);
 
     public List<Artigo> obterArtigoPorDataHora(LocalDateTime de, LocalDateTime ate);
+
+    public List<Artigo> encontrarArtigosComplexos(Integer status, LocalDateTime data, String titulo);
+
+    Page<Artigo> findAll(Pageable pageable);
+
+    public List<Artigo> findByStatusOrderByTituloAsc(Integer status);
+
+    public List<Artigo> obterArtigosPorStatusComOrdenacao(Integer status);
+
+    public List<Artigo> findByTexto(String searchTerm);
+
+    public List<ArtigoStatusCount> contarArtigosPorStatus();
+
+    public List<AutorTotalArtigo> calcularTotalArtigosAutorPeriodo(LocalDate dataInicio, LocalDate dataFim);
 
 }
