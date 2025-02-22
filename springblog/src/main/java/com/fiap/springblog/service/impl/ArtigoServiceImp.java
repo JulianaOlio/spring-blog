@@ -19,6 +19,7 @@ import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.*;
 import org.springframework.data.mongodb.repository.DeleteQuery;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,6 +45,7 @@ public class ArtigoServiceImp implements ArtigoService {
         return this.artigoRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Artigo obterPorCodigo(String codigo) {
         return this.artigoRepository
@@ -51,6 +53,7 @@ public class ArtigoServiceImp implements ArtigoService {
                 .orElseThrow(()-> new IllegalArgumentException("Artigo não existe"));
     }
 
+    @Transactional
     @Override
     public Artigo criar(Artigo artigo) {
 
@@ -82,6 +85,7 @@ public class ArtigoServiceImp implements ArtigoService {
         return mongoTemplate.find(query, Artigo.class);
     }
 
+    @Transactional
     @Override
     public void atualizar(Artigo updateArtigo) {
 
@@ -97,6 +101,7 @@ public class ArtigoServiceImp implements ArtigoService {
         //executa atualização
         this.mongoTemplate.updateFirst(query,update, Artigo.class);
     }
+    @Transactional
     @Override
     public void deleteById(String codigo){
         this.artigoRepository.deleteById(codigo);
@@ -107,9 +112,8 @@ public class ArtigoServiceImp implements ArtigoService {
         Query query = new Query(Criteria.where("codigo").is(codigo));
         //executa a remoção do objeto baseado na query
         mongoTemplate.remove(query, Artigo.class);
-
-
     }
+
     //Query methods - example
     @Override
     public List<Artigo> findByStatusAndDataGreaterThan(Integer status, LocalDateTime data) {

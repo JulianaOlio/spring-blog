@@ -2,16 +2,20 @@ package com.fiap.springblog.controller;
 
 import com.fiap.springblog.model.Artigo;
 import com.fiap.springblog.model.ArtigoStatusCount;
+import com.fiap.springblog.model.AutorTotalArtigo;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.ArtigoService;
 import com.fiap.springblog.model.Autor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.service.annotation.PutExchange;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,6 +25,14 @@ public class ArtigoController {
 
     @Autowired
     private ArtigoService artigoService;
+
+    public ResponseEntity<String> handleOptimisticLockingFailureException(
+            OptimisticLockingFailureException ex
+        ){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Erro de concorrência: O artigo foi atualizado por outro usuário. " +
+                         "Por favor tente novamente!");
+    }
 
     @GetMapping
     public List<Artigo> obterTodos() {
@@ -124,4 +136,14 @@ public class ArtigoController {
     public List<ArtigoStatusCount> contarArtigosPorStatus(){
         return this.artigoService.contarArtigosPorStatus();
     }
+
+    @GetMapping("/total-artigo-autor-periodo")
+    public List<AutorTotalArtigo> calcularTotalArtigosAutorPeriodo(
+            @RequestParam("dataInicio") LocalDate dataInicial,
+            @RequestParam("dataFim") LocalDate dataFim
+    ){
+        return this.artigoService.calcularTotalArtigosAutorPeriodo(dataInicial,dataFim);
+    }
+
+
 }
