@@ -26,6 +26,7 @@ public class ArtigoController {
     @Autowired
     private ArtigoService artigoService;
 
+    @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<String> handleOptimisticLockingFailureException(
             OptimisticLockingFailureException ex
         ){
