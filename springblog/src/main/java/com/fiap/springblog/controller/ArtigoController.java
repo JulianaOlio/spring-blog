@@ -1,11 +1,8 @@
 package com.fiap.springblog.controller;
 
-import com.fiap.springblog.model.Artigo;
-import com.fiap.springblog.model.ArtigoStatusCount;
-import com.fiap.springblog.model.AutorTotalArtigo;
+import com.fiap.springblog.model.*;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.ArtigoService;
-import com.fiap.springblog.model.Autor;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -51,9 +48,18 @@ public class ArtigoController {
         return this.artigoService.criar(artigo);
     }*/
 
-    @PostMapping
+    /*@PostMapping
     public ResponseEntity<?> criar(@RequestBody Artigo artigo){
         return this.artigoService.criar(artigo);
+    }*/
+
+    @PostMapping
+    public ResponseEntity<?> criarArtigoComAutor(@RequestBody ArtigoComAutorRequest artigoComAutorRequest){
+        // recupero meu objeto artigo
+        Artigo artigo = artigoComAutorRequest.getArtigo();
+        // recupero meu objeto autor
+        Autor autor = artigoComAutorRequest.getAutor();
+        return this.artigoService.criarArtigoComAutor(artigo, autor);
     }
 
     @PutMapping("/atualiza-artigo/{codigo}")

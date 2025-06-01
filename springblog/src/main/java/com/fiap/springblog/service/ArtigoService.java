@@ -56,4 +56,5 @@ public interface ArtigoService {
 
     public List<AutorTotalArtigo> calcularTotalArtigosAutorPeriodo(LocalDate dataInicio, LocalDate dataFim);
 
+    public void excluirArtigoEAutor(Artigo artigo);
 }
