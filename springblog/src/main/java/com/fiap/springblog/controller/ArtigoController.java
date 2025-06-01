@@ -163,5 +163,8 @@ public class ArtigoController {
         return this.artigoService.calcularTotalArtigosAutorPeriodo(dataInicial,dataFim);
     }
 
-
+    @DeleteMapping("/delete-artigo-autor")
+    public void excluirArtigoEAutor(@RequestBody Artigo artigo){
+        this.artigoService.excluirArtigoEAutor(artigo);
+    }
 }
