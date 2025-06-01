@@ -8,6 +8,8 @@ import com.fiap.springblog.repository.ArtigoRepository;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.ArtigoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,10 +19,10 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.*;
-import org.springframework.data.mongodb.repository.DeleteQuery;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,7 +55,60 @@ public class ArtigoServiceImp implements ArtigoService {
                 .orElseThrow(()-> new IllegalArgumentException("Artigo não existe"));
     }
 
-    @Transactional
+    @Override
+    public ResponseEntity<?> criarArtigoComAutor(Artigo artigo, Autor autor) {
+
+        return null;
+    }
+
+    /*@Override
+    public ResponseEntity<?> criar(Artigo artigo) {
+        if(artigo.getAutor().getCodigo() != null){
+            //crio um autor e recupero o autor no banco de dados
+            Autor autor = this.autorRepository
+                    .findById(artigo.getAutor().getCodigo())
+                    .orElseThrow(()-> new IllegalArgumentException("Autor inexistente"));
+            artigo.setAutor(autor);
+        }else{
+            artigo.setAutor(null);
+        }
+        try{
+            this.artigoRepository.save(artigo);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }catch(DuplicateKeyException e){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Artigo já existe na coleção");
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao criar artigo" + e.getMessage());
+        }
+    }
+
+     */
+
+    @Override
+    public ResponseEntity<?> atualizarArtigo(String codigo, Artigo artigo) {
+        try {
+            Artigo existenteArtigo = this.artigoRepository
+                    .findById(codigo).orElse(null);
+
+            if(existenteArtigo == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Artigo não encontrado na coleção");
+            }
+            //Atualizar os dados do artigo existente
+            existenteArtigo.setTitulo(artigo.getTitulo());
+            existenteArtigo.setData(artigo.getData());
+            existenteArtigo.setTexto(artigo.getTexto());
+            this.artigoRepository.save(existenteArtigo);
+            return ResponseEntity.status(HttpStatus.OK).build();
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao atualizar o artigo: " + e.getMessage());
+
+        }
+    }
+
+   /* @Transactional
     @Override
     public Artigo criar(Artigo artigo) {
 
@@ -66,8 +121,33 @@ public class ArtigoServiceImp implements ArtigoService {
         }else{
             artigo.setAutor(null);
         }
-        return this.artigoRepository.save(artigo);
-    }
+        // tratamento de exceção: do optismit looking exception
+        try{
+            return this.artigoRepository.save(artigo);
+
+        } catch (OptimisticLockingFailureException e) {
+            // desenvolvo a estratégia
+
+            // 1.recupero o documenta mais recente do banco de dados ( da coleção artigos"
+            Artigo atualizado = artigoRepository.findById(artigo.getCodigo()).orElse(null);
+            if(atualizado != null) {
+
+                //2. atualizar os campos desejados
+
+                atualizado.setTitulo(artigo.getTitulo());
+                atualizado.setTexto(artigo.getTexto());
+                atualizado.setStatus(artigo.getStatus());
+
+                //3. incrementar a versão manualmente do documento colocando um acumulador
+                atualizado.setVersion(artigo.getVersion() + 1);
+
+                //4. tentar salvar novamente
+                return this.artigoRepository.save(artigo);
+            }else {
+                throw new RuntimeException("Artigo não encontrado" + artigo.getCodigo());
+            }
+        }
+    }*/
 
     @Override
     public List<Artigo> findByDataGreaterThan(LocalDateTime data) {
@@ -101,6 +181,7 @@ public class ArtigoServiceImp implements ArtigoService {
         //executa atualização
         this.mongoTemplate.updateFirst(query,update, Artigo.class);
     }
+
     @Transactional
     @Override
     public void deleteById(String codigo){
